@@ -1,0 +1,41 @@
+{
+  "name": "globwatch",
+  "version": "1.0.0",
+  "description": "watch a set of files for changes (including create/delete) by glob patterns",
+  "keywords": [ "watch" ],
+  "author": "Robey Pointer <robeypointer@gmail.com>",
+  "homepage": "https://github.com/robey/globwatch",
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/robey/globwatch.git"
+  },
+  "licenses": [
+    {
+      "type": "Apache License 2.0",
+      "url": "http://www.apache.org/licenses/LICENSE-2.0.txt"
+    }
+  ],
+
+  "scripts": {
+    "test": "plz test"
+  },
+  "dependencies": {
+    "coffee-script": "*",
+    "glob": "*",
+    "minimatch": "*",
+    "q": "*"
+  },
+  "devDependencies": {
+    "mocha": "*",
+    "shelljs": "*",
+    "should": "*",
+    "touch": "*"
+  },
+  "main": "./lib/globwatch",
+  "files": [
+    "build.plz",
+    "Cakefile",
+    "lib",
+    "test"
+  ]
+}

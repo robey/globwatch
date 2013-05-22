@@ -1,0 +1,16 @@
+
+task "build", description: "compile coffeescript", run: ->
+  mkdir "-p", "lib"
+  exec "coffee -o lib -c src"
+
+task "test", description: "run unit tests", watch: "lib/**/*", run: (options) ->
+  display = options.display or "spec"
+  # watch is very very slow, so allow for deathly slow tests.
+  speed = "--timeout 5000 --slow 5000"
+  exec "./node_modules/mocha/bin/mocha #{speed} -R #{display} --compilers coffee:coffee-script --colors"
+
+task "clean", description: "erase built files", run: ->
+  rm "-rf", "lib"
+
+task "distclean", description: "erase everything that wasn't in git", must: "clean", run: ->
+  rm "-rf", "node_modules"
