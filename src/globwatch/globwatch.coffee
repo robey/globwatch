@@ -7,6 +7,7 @@ Q = require 'q'
 util = require 'util'
 
 makePromise = require("./make_promise").makePromise
+FileWatcher = require("./filewatcher").FileWatcher
 
 # FIXME this should probably be in a minimatch wrapper class
 folderMatchesMinimatchPrefix = (folderSegments, minimatchSet) ->
@@ -162,7 +163,7 @@ class GlobWatch extends events.EventEmitter
   stopWatches: ->
     for filename, watcher of @watchers then watcher.close()
     for folderName in @watchMap.getFolders()
-      fs.unwatchFile(folderName)
+      FileWatcher.unwatch(folderName)
       for filename in @watchMap.getFilenames(folderName) then fs.unwatchFile(filename)
     @watchers = {}
 
@@ -183,14 +184,14 @@ class GlobWatch extends events.EventEmitter
   # FIXME may throw an exception
   watchFile: (filename) ->
     @debug "watchFile: #{filename}"
-    fs.watchFile filename, { persistent: @persistent, interval: @interval }, (curr, prev) =>
-      @debug "watchFile event: #{filename} #{prev.mtime.getTime()} -> #{curr.mtime.getTime()}"
-      if (curr.mtime.getTime() != prev.mtime.getTime() or curr.size != prev.size) and fs.existsSync(filename)
-        @emit 'changed', filename
+    # FIXME @persistent @interval
+    FileWatcher.watch(filename).on 'changed', =>
+      @debug "watchFile event: #{filename}"
+      @emit 'changed', filename
 
   folderChanged: (folderName) ->
     return if @closed
-    makePromise(fs.readDir)(folderName)
+    makePromise(fs.readdir)(folderName)
     .fail (error) =>
       []
     .then (current) =>
