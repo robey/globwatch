@@ -4,10 +4,7 @@ path = require 'path'
 Q = require 'q'
 util = require 'util'
 
-deferStat = (filename) ->
-  defer = Q.defer()
-  fs.stat(filename, defer.makeNodeResolver())
-  defer.promise
+makePromise = require("./make_promise").makePromise
 
 FileWatcher =
   # frequency of stat() checking, in milliseconds
@@ -63,7 +60,7 @@ class Watch extends events.EventEmitter
     @stat = fs.statSync @filename
 
   check: ->
-    deferStat(@filename)
+    makePromise(fs.stat)(@filename)
     .fail (error) ->
       null
     .then (stat) =>
