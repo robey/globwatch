@@ -83,7 +83,7 @@ class GlobWatch extends events.EventEmitter
     @closed = false
     @cwd = options.cwd or process.cwd()
     @debounceInterval = options.debounceInterval or 100
-    @interval = options.interval or 1000
+    @interval = options.interval or 250
     @debug = options.debug or (->)
     @persistent = options.persistent or false
     @watchMap = new WatchMap
@@ -163,8 +163,7 @@ class GlobWatch extends events.EventEmitter
   stopWatches: ->
     for filename, watcher of @watchers then watcher.close()
     for folderName in @watchMap.getFolders()
-      FileWatcher.unwatch(folderName)
-      for filename in @watchMap.getFilenames(folderName) then fs.unwatchFile(filename)
+      for filename in @watchMap.getFilenames(folderName) then FileWatcher.unwatch(filename)
     @watchers = {}
 
   startWatches: ->
@@ -172,6 +171,26 @@ class GlobWatch extends events.EventEmitter
       @watchFolder folderName
       for filename in @watchMap.getFilenames(folderName)
         if filename[filename.length - 1] != "/" then @watchFile filename
+
+  # scan every covered folder again to see if there were any changes.
+  check: ->
+    @debug "-> check"
+    folders = (Object.keys(@watchers).map (folderName) => @folderChanged(folderName))
+    Q.all([ FileWatcher.check() ].concat(folders)).then =>
+      @debug "<- check"
+
+  # scan every covered folder again to see if there were any changes.
+  checkk: ->
+    @debug "-> check"
+    Q.all(
+      for folderName in Object.keys(@watchers)
+        files = (
+          for filename in @watchMap.getFilenames(folderName)
+            FileWatcher.watchFor(filename).check()
+        )
+        Q.all([ @folderChanged(folderName) ].concat(files))
+    ).then =>
+      @debug "<- check"
 
   # FIXME may throw an exception
   watchFolder: (folderName) ->
@@ -181,7 +200,6 @@ class GlobWatch extends events.EventEmitter
       # wait a short interval to make sure the new folder has some staying power.
       setTimeout((=> @folderChanged(folderName)), @debounceInterval)
     
-  # FIXME may throw an exception
   watchFile: (filename) ->
     @debug "watchFile: #{filename}"
     # FIXME @persistent @interval
@@ -190,6 +208,7 @@ class GlobWatch extends events.EventEmitter
       @emit 'changed', filename
 
   folderChanged: (folderName) ->
+    @debug "-> check folder: #{folderName}"
     return if @closed
     makePromise(fs.readdir)(folderName)
     .fail (error) =>
@@ -211,8 +230,12 @@ class GlobWatch extends events.EventEmitter
         if f[f.length - 1] == '/' then @folderDeleted(f) else @fileDeleted(f)
 
       # new files/folders
-      for f in current.filter((x) -> previous.indexOf(x) < 0)
-        if f[f.length - 1] == '/' then @folderAdded(f) else @fileAdded(f, folderName)
+      Q.all(
+        for f in current.filter((x) -> previous.indexOf(x) < 0)
+          if f[f.length - 1] == '/' then @folderAdded(f) else @fileAdded(f, folderName)
+      )
+    .then =>
+      @debug "<- check folder: #{folderName}"
 
   fileDeleted: (filename) ->
     @debug "file deleted: #{filename}"
@@ -242,11 +265,12 @@ class GlobWatch extends events.EventEmitter
     @watchMap.watchFile(filename, folderName)
     @watchFile filename
     @emit 'added', filename
+    Q(null)
 
   folderAdded: (folderName) ->
     # if it potentially matches the prefix of a glob we're watching, start
     # watching it, and recursively check for new files.
-    return unless @folderIsInteresting(folderName)
+    return null unless @folderIsInteresting(folderName)
     @watchMap.watchFolder(folderName)
     @watchFolder folderName
     @folderChanged(folderName)

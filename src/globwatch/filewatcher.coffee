@@ -39,6 +39,9 @@ FileWatcher =
     watch = @watches[filename]
     if watch? then delete @watches[filename]    
 
+  watchFor: (filename) ->
+    @watches[path.resolve(filename)]
+
   # runs a scan of all outstanding watches.
   # if a scan is currently running, the new scan is queued up behind it.
   # returns a promise that will be fulfilled when this new scan is finished.
