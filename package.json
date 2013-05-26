@@ -1,13 +1,13 @@
 {
-  "name": "globwatch",
+  "name": "globwatcher",
   "version": "1.0.0",
   "description": "watch a set of files for changes (including create/delete) by glob patterns",
   "keywords": [ "watch" ],
   "author": "Robey Pointer <robeypointer@gmail.com>",
-  "homepage": "https://github.com/robey/globwatch",
+  "homepage": "https://github.com/robey/globwatcher",
   "repository": {
     "type": "git",
-    "url": "git://github.com/robey/globwatch.git"
+    "url": "git://github.com/robey/globwatcher.git"
   },
   "licenses": [
     {
@@ -31,7 +31,7 @@
     "should": "*",
     "touch": "*"
   },
-  "main": "./lib/globwatch",
+  "main": "./lib/globwatcher",
   "files": [
     "build.plz",
     "Cakefile",

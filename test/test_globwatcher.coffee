@@ -11,7 +11,7 @@ test_util = require("./test_util")
 futureTest = test_util.futureTest
 withTempFolder = test_util.withTempFolder
 
-globwatch = require("../lib/globwatch/globwatch")
+globwatcher = require("../lib/globwatcher/globwatcher")
 
 dump = (x) -> util.inspect x, false, null, true
 
@@ -33,11 +33,11 @@ fixtures = (f) ->
     f(folder)
 
 # create a new globwatch, run a test, and close it
-withGlobwatch = (pattern, options, f) ->
+withGlobwatcher = (pattern, options, f) ->
   if not f?
     f = options
     options = {}
-  g = globwatch.globwatch(pattern, options)
+  g = globwatcher.globwatcher(pattern, options)
   g.ready.fin ->
     f(g)
   .fin ->
@@ -57,23 +57,23 @@ capture = (g) ->
     summary["changed"].sort()
   summary
 
-describe "globwatch", ->
+describe "globwatcher", ->
   it "folderMatchesMinimatchPrefix", ->
     set = new minimatch.Minimatch("/home/commie/**/*.js", nonegate: true).set[0]
-    globwatch.folderMatchesMinimatchPrefix([ "", "home" ], set).should.equal(true)
-    globwatch.folderMatchesMinimatchPrefix([ "", "home", "commie" ], set).should.equal(true)
-    globwatch.folderMatchesMinimatchPrefix([ "", "home", "robey" ], set).should.equal(false)
-    globwatch.folderMatchesMinimatchPrefix([ "", "home", "commie", "rus" ], set).should.equal(true)
+    globwatcher.folderMatchesMinimatchPrefix([ "", "home" ], set).should.equal(true)
+    globwatcher.folderMatchesMinimatchPrefix([ "", "home", "commie" ], set).should.equal(true)
+    globwatcher.folderMatchesMinimatchPrefix([ "", "home", "robey" ], set).should.equal(false)
+    globwatcher.folderMatchesMinimatchPrefix([ "", "home", "commie", "rus" ], set).should.equal(true)
     set = new minimatch.Minimatch("/home/commie/l*/*.js", nonegate: true).set[0]
-    globwatch.folderMatchesMinimatchPrefix([ "", "home" ], set).should.equal(true)
-    globwatch.folderMatchesMinimatchPrefix([ "", "home", "commie" ], set).should.equal(true)
-    globwatch.folderMatchesMinimatchPrefix([ "", "home", "robey" ], set).should.equal(false)
-    globwatch.folderMatchesMinimatchPrefix([ "", "home", "commie", "rus" ], set).should.equal(false)
-    globwatch.folderMatchesMinimatchPrefix([ "", "home", "commie", "lola" ], set).should.equal(true)
-    globwatch.folderMatchesMinimatchPrefix([ "", "home", "commie", "lola", "prissy" ], set).should.equal(false)
+    globwatcher.folderMatchesMinimatchPrefix([ "", "home" ], set).should.equal(true)
+    globwatcher.folderMatchesMinimatchPrefix([ "", "home", "commie" ], set).should.equal(true)
+    globwatcher.folderMatchesMinimatchPrefix([ "", "home", "robey" ], set).should.equal(false)
+    globwatcher.folderMatchesMinimatchPrefix([ "", "home", "commie", "rus" ], set).should.equal(false)
+    globwatcher.folderMatchesMinimatchPrefix([ "", "home", "commie", "lola" ], set).should.equal(true)
+    globwatcher.folderMatchesMinimatchPrefix([ "", "home", "commie", "lola", "prissy" ], set).should.equal(false)
 
   it "addWatch", futureTest ->
-    withGlobwatch "/wut", (g) ->
+    withGlobwatcher "/wut", (g) ->
       for f in [
         "/absolute.txt"
         "/sub/absolute.txt"
@@ -85,7 +85,7 @@ describe "globwatch", ->
       g.watchMap.getFilenames("/deeply/nested/file/why/nobody/").should.eql [ "/deeply/nested/file/why/nobody/knows.txt" ]
 
   it "can parse patterns", fixtures (folder) ->
-    withGlobwatch "#{folder}/**/*.x", (g) ->
+    withGlobwatcher "#{folder}/**/*.x", (g) ->
       g.patterns.should.eql [ "#{folder}/**/*.x" ]
       Object.keys(g.watchers).sort().should.eql [ "#{folder}/", "#{folder}/nested/", "#{folder}/sub/" ]
       g.watchMap.getFolders().sort().should.eql [ "#{folder}/", "#{folder}/nested/", "#{folder}/sub/" ]
@@ -94,21 +94,21 @@ describe "globwatch", ->
       g.watchMap.getFilenames("#{folder}/sub/").should.eql [ "#{folder}/sub/one.x", "#{folder}/sub/two.x" ]
 
   it "can parse patterns relative to cwd", fixtures (folder) ->
-    withGlobwatch "**/*.x", { cwd: "#{folder}/sub" }, (g) ->
+    withGlobwatcher "**/*.x", { cwd: "#{folder}/sub" }, (g) ->
       g.patterns.should.eql [ "#{folder}/sub/**/*.x" ]
       Object.keys(g.watchers).sort().should.eql [ "#{folder}/sub/" ]
       g.watchMap.getFolders().sort().should.eql [ "#{folder}/sub/" ]
       g.watchMap.getFilenames("#{folder}/sub/").should.eql [ "#{folder}/sub/one.x", "#{folder}/sub/two.x" ]
 
   it "handles odd relative paths", fixtures (folder) ->
-    withGlobwatch "../sub/**/*.x", { cwd: "#{folder}/nested" }, (g) ->
+    withGlobwatcher "../sub/**/*.x", { cwd: "#{folder}/nested" }, (g) ->
       Object.keys(g.watchers).sort().should.eql [ "#{folder}/sub/" ]
       g.watchMap.getFolders().sort().should.eql [ "#{folder}/sub/" ]
       g.watchMap.getFilenames("#{folder}/sub/").should.eql [ "#{folder}/sub/one.x", "#{folder}/sub/two.x" ]
 
   it "notices new files", fixtures (folder) ->
     summary = null
-    withGlobwatch "#{folder}/**/*.x", (g) ->
+    withGlobwatcher "#{folder}/**/*.x", (g) ->
       summary = capture(g)
       touch.sync "#{folder}/nested/four.x"
       touch.sync "#{folder}/sub/not-me.txt"
@@ -119,7 +119,7 @@ describe "globwatch", ->
 
   it "doesn't emit signals when turned off", fixtures (folder) ->
     summary = null
-    withGlobwatch "#{folder}/**/*.x", (g) ->
+    withGlobwatcher "#{folder}/**/*.x", (g) ->
       summary = capture(g)
       g.stopWatches()
       touch.sync "#{folder}/nested/four.x"
@@ -132,7 +132,7 @@ describe "globwatch", ->
 
   it "notices new files only in cwd", fixtures (folder) ->
     summary = null
-    withGlobwatch "**/*.x", { cwd: "#{folder}/sub" }, (g) ->
+    withGlobwatcher "**/*.x", { cwd: "#{folder}/sub" }, (g) ->
       summary = capture(g)
       touch.sync "#{folder}/nested/four.x"
       touch.sync "#{folder}/sub/not-me.txt"
@@ -144,7 +144,7 @@ describe "globwatch", ->
 
   it "notices new files nested deeply", fixtures (folder) ->
     summary = null
-    withGlobwatch "#{folder}/**/*.x", (g) ->
+    withGlobwatcher "#{folder}/**/*.x", (g) ->
       summary = capture(g)
       shell.mkdir "-p", "#{folder}/nested/more/deeply"
       touch.sync "#{folder}/nested/more/deeply/nine.x"
@@ -155,7 +155,7 @@ describe "globwatch", ->
 
   it "notices deleted files", fixtures (folder) ->
     summary = null
-    withGlobwatch "**/*.x", { cwd: "#{folder}" }, (g) ->
+    withGlobwatcher "**/*.x", { cwd: "#{folder}" }, (g) ->
       summary = capture(g)
       fs.unlinkSync("#{folder}/sub/one.x")
       g.check().then ->
@@ -165,7 +165,7 @@ describe "globwatch", ->
 
   it "notices a rename as an add + delete", fixtures (folder) ->
     summary = null
-    withGlobwatch "**/*.x", { cwd: "#{folder}" }, (g) ->
+    withGlobwatcher "**/*.x", { cwd: "#{folder}" }, (g) ->
       summary = capture(g)
       fs.renameSync "#{folder}/sub/two.x", "#{folder}/sub/twelve.x"
       g.check().then ->
@@ -178,7 +178,7 @@ describe "globwatch", ->
     shell.mkdir "-p", "#{folder}/nested/more/deeply"
     touch.sync "#{folder}/nested/more/deeply/here.x"
     summary = null
-    withGlobwatch "**/*.x", { cwd: "#{folder}" }, (g) ->
+    withGlobwatcher "**/*.x", { cwd: "#{folder}" }, (g) ->
       summary = capture(g)
       shell.rm "-r", "#{folder}/nested"
       g.check().then ->
@@ -188,7 +188,7 @@ describe "globwatch", ->
 
   it "handles a changed file", fixtures (folder) ->
     summary = null
-    withGlobwatch "**/*.x", { cwd: "#{folder}" }, (g) ->
+    withGlobwatcher "**/*.x", { cwd: "#{folder}" }, (g) ->
       summary = capture(g)
       fs.writeFileSync "#{folder}/sub/one.x", "gahhhhhh"
       g.check().then ->
@@ -200,7 +200,7 @@ describe "globwatch", ->
     summary = null
     savee = "#{folder}/one.x"
     backup = "#{folder}/one.x~"
-    withGlobwatch "**/*.x", { cwd: "#{folder}" }, (g) ->
+    withGlobwatcher "**/*.x", { cwd: "#{folder}" }, (g) ->
       summary = capture(g)
       fs.writeFileSync backup, fs.readFileSync(savee)
       fs.unlinkSync savee
@@ -212,7 +212,7 @@ describe "globwatch", ->
 
   it "only emits once for a changed file", fixtures (folder) ->
     summary = null
-    withGlobwatch "**/*.x", { cwd: "#{folder}" }, (g) ->
+    withGlobwatcher "**/*.x", { cwd: "#{folder}" }, (g) ->
       summary = capture(g)
       fs.writeFileSync "#{folder}/one.x", "whee1"
       g.check().then ->
@@ -227,7 +227,7 @@ describe "globwatch", ->
 
   it "emits twice if a file was changed twice", fixtures (folder) ->
     summary = null
-    withGlobwatch "**/*.x", { cwd: "#{folder}" }, (g) ->
+    withGlobwatcher "**/*.x", { cwd: "#{folder}" }, (g) ->
       summary = capture(g)
       fs.writeFileSync "#{folder}/one.x", "whee1"
       g.check().then ->
@@ -242,12 +242,12 @@ describe "globwatch", ->
         }
 
   it "doesn't mind watching a nonexistent folder", fixtures (folder) ->
-    withGlobwatch "#{folder}/not/there/*", (g) ->
+    withGlobwatcher "#{folder}/not/there/*", (g) ->
       3.should.equal(3)
 
   it "sees a new matching file even if the whole folder was missing when it started", futureTest withTempFolder (folder) ->
     summary = null
-    withGlobwatch "#{folder}/not/there/*", (g) ->
+    withGlobwatcher "#{folder}/not/there/*", (g) ->
       summary = capture(g)
       shell.mkdir "-p", "#{folder}/not/there"
       fs.writeFileSync "#{folder}/not/there/ten.x", "wheeeeeee"
@@ -258,7 +258,7 @@ describe "globwatch", ->
 
   it "sees a new matching file even if nested folders were missing when it started", fixtures (folder) ->
     summary = null
-    withGlobwatch "#{folder}/sub/deeper/*.x", (g) ->
+    withGlobwatcher "#{folder}/sub/deeper/*.x", (g) ->
       summary = capture(g)
       shell.mkdir "-p", "#{folder}/sub/deeper"
       fs.writeFileSync "#{folder}/sub/deeper/ten.x", "wheeeeeee"
@@ -271,7 +271,7 @@ describe "globwatch", ->
     shell.mkdir "-p", "#{folder}/nested/deeper"
     touch.sync "#{folder}/nested/deeper/four.x"
     summary = null
-    withGlobwatch "#{folder}/nested/deeper/*.x", (g) ->
+    withGlobwatcher "#{folder}/nested/deeper/*.x", (g) ->
       summary = capture(g)
       shell.rm "-r", "#{folder}/nested"
       shell.mkdir "-p", "#{folder}/nested/deeper"
@@ -285,7 +285,7 @@ describe "globwatch", ->
   it "sees a new matching file even if the folder exists but was empty", fixtures (folder) ->
     shell.mkdir "-p", "#{folder}/nested/deeper"
     summary = null
-    withGlobwatch "#{folder}/nested/deeper/*.x", (g) ->
+    withGlobwatcher "#{folder}/nested/deeper/*.x", (g) ->
       summary = capture(g)
       fs.writeFileSync "#{folder}/nested/deeper/ten.x", "wheeeeeee"
       g.check().then ->

@@ -75,14 +75,14 @@ class WatchMap
     out.join("\n") + "\n"
 
 
-exports.globwatch = (pattern, options) ->
-  g = new GlobWatch(pattern, options)
+exports.globwatcher = (pattern, options) ->
+  g = new GlobWatcher(pattern, options)
 
-class GlobWatch extends events.EventEmitter
+class GlobWatcher extends events.EventEmitter
   constructor: (patterns, options={}) ->
     @closed = false
     @cwd = options.cwd or process.cwd()
-    @debounceInterval = options.debounceInterval or 100
+    @debounceInterval = options.debounceInterval or 10
     @interval = options.interval or 250
     @debug = options.debug or (->)
     @persistent = options.persistent or false

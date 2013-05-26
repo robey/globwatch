@@ -10,7 +10,7 @@ test_util = require("./test_util")
 futureTest = test_util.futureTest
 withTempFolder = test_util.withTempFolder
 
-FileWatcher = require("../lib/globwatch/filewatcher").FileWatcher
+FileWatcher = require("../lib/globwatcher/filewatcher").FileWatcher
 
 makeFixtures = (folder) ->
   past = Date.now() - 1000
