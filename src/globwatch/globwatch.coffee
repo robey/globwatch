@@ -179,26 +179,15 @@ class GlobWatch extends events.EventEmitter
     Q.all([ FileWatcher.check() ].concat(folders)).then =>
       @debug "<- check"
 
-  # scan every covered folder again to see if there were any changes.
-  checkk: ->
-    @debug "-> check"
-    Q.all(
-      for folderName in Object.keys(@watchers)
-        files = (
-          for filename in @watchMap.getFilenames(folderName)
-            FileWatcher.watchFor(filename).check()
-        )
-        Q.all([ @folderChanged(folderName) ].concat(files))
-    ).then =>
-      @debug "<- check"
-
-  # FIXME may throw an exception
   watchFolder: (folderName) ->
     @debug "watch: #{folderName}"
-    @watchers[folderName] = fs.watch folderName, (event) =>
-      @debug "watch event: #{folderName}"
-      # wait a short interval to make sure the new folder has some staying power.
-      setTimeout((=> @folderChanged(folderName)), @debounceInterval)
+    try
+      @watchers[folderName] = fs.watch folderName, (event) =>
+        @debug "watch event: #{folderName}"
+        # wait a short interval to make sure the new folder has some staying power.
+        setTimeout((=> @folderChanged(folderName)), @debounceInterval)
+    catch e
+      # never mind.
     
   watchFile: (filename) ->
     @debug "watchFile: #{filename}"
