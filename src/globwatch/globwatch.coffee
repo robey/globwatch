@@ -87,6 +87,7 @@ class GlobWatch extends events.EventEmitter
     @debug = options.debug or (->)
     @persistent = options.persistent or false
     @watchMap = new WatchMap
+    @fileWatcher = new FileWatcher()
     # map of (absolute) folderName -> FSWatcher
     @watchers = {}
     # (ordered) list of glob patterns to watch
@@ -163,7 +164,7 @@ class GlobWatch extends events.EventEmitter
   stopWatches: ->
     for filename, watcher of @watchers then watcher.close()
     for folderName in @watchMap.getFolders()
-      for filename in @watchMap.getFilenames(folderName) then FileWatcher.unwatch(filename)
+      for filename in @watchMap.getFilenames(folderName) then @fileWatcher.unwatch(filename)
     @watchers = {}
 
   startWatches: ->
@@ -176,7 +177,7 @@ class GlobWatch extends events.EventEmitter
   check: ->
     @debug "-> check"
     folders = (Object.keys(@watchers).map (folderName) => @folderChanged(folderName))
-    Q.all([ FileWatcher.check() ].concat(folders)).then =>
+    Q.all([ @fileWatcher.check() ].concat(folders)).then =>
       @debug "<- check"
 
   watchFolder: (folderName) ->
@@ -192,7 +193,7 @@ class GlobWatch extends events.EventEmitter
   watchFile: (filename) ->
     @debug "watchFile: #{filename}"
     # FIXME @persistent @interval
-    FileWatcher.watch(filename).on 'changed', =>
+    @fileWatcher.watch(filename).on 'changed', =>
       @debug "watchFile event: #{filename}"
       @emit 'changed', filename
 

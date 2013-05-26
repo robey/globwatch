@@ -6,20 +6,22 @@ util = require 'util'
 
 makePromise = require("./make_promise").makePromise
 
-FileWatcher =
-  # frequency of stat() checking, in milliseconds
-  period: 250
 
-  # global timer that periodically checks for file changes
-  timer: null
+class FileWatcher
+  constructor: (options={}) ->
+    # frequency of stat() checking, in milliseconds
+    @period = options.period or 250
+    # should our timer keep the process alive?
+    @persistent = true
+    if options.persistent? then @persistent = options.persistent
+    # timer that periodically checks for file changes
+    @timer = null
+    # filename -> Watch
+    @watches = {}
+    # chain of running checks
+    @ongoing = null
 
-  # filename -> Watch
-  watches: {}
-
-  # chain of running checks
-  ongoing: null
-
-  reset: ->
+  close: ->
     @watches = {}
     if @timer?
       clearInterval(@timer)
@@ -32,6 +34,7 @@ FileWatcher =
       watch = @watches[filename] = new Watch(filename)
     if not @timer?
       @timer = setInterval((=> @check()), @period)
+      if not @persistent then @timer.unref()
     watch
 
   unwatch: (filename) ->
