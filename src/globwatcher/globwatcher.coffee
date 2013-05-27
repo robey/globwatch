@@ -87,7 +87,7 @@ class GlobWatcher extends events.EventEmitter
     @debug = options.debug or (->)
     @persistent = options.persistent or false
     @watchMap = new WatchMap
-    @fileWatcher = new FileWatcher()
+    @fileWatcher = new FileWatcher(options)
     # map of (absolute) folderName -> FSWatcher
     @watchers = {}
     # (ordered) list of glob patterns to watch
@@ -125,6 +125,13 @@ class GlobWatcher extends events.EventEmitter
     @stopWatches()
     @watchMap.clear()
     @closed = true
+
+  # scan every covered folder again to see if there were any changes.
+  check: ->
+    @debug "-> check"
+    folders = (Object.keys(@watchers).map (folderName) => @folderChanged(folderName))
+    Q.all([ @fileWatcher.check() ].concat(folders)).then =>
+      @debug "<- check"
 
   # ----- internals:
 
@@ -173,17 +180,10 @@ class GlobWatcher extends events.EventEmitter
       for filename in @watchMap.getFilenames(folderName)
         if filename[filename.length - 1] != "/" then @watchFile filename
 
-  # scan every covered folder again to see if there were any changes.
-  check: ->
-    @debug "-> check"
-    folders = (Object.keys(@watchers).map (folderName) => @folderChanged(folderName))
-    Q.all([ @fileWatcher.check() ].concat(folders)).then =>
-      @debug "<- check"
-
   watchFolder: (folderName) ->
     @debug "watch: #{folderName}"
     try
-      @watchers[folderName] = fs.watch folderName, (event) =>
+      @watchers[folderName] = fs.watch folderName, { persistent: @persistent }, (event) =>
         @debug "watch event: #{folderName}"
         # wait a short interval to make sure the new folder has some staying power.
         setTimeout((=> @folderChanged(folderName)), @debounceInterval)

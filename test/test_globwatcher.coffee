@@ -37,6 +37,7 @@ withGlobwatcher = (pattern, options, f) ->
   if not f?
     f = options
     options = {}
+  options.persistent = false
   g = globwatcher.globwatcher(pattern, options)
   g.ready.fin ->
     f(g)
