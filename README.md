@@ -71,7 +71,8 @@ Useful methods:
   events on changes. You don't need to call this function normally, but if
   you believe files have changed, and want to bypass the normal scan
   interval, this call may speed up the latency between a filesystem event and
-  the event signalled by globwatcher.
+  the event signalled by globwatcher. Returns a promise that is fulfilled
+  when the check is finished.
 
 Events signalled:
 
