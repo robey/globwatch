@@ -76,7 +76,7 @@ class WatchMap
 
 
 exports.globwatcher = (pattern, options) ->
-  g = new GlobWatcher(pattern, options)
+  new GlobWatcher(pattern, options)
 
 class GlobWatcher extends events.EventEmitter
   constructor: (patterns, options={}) ->
