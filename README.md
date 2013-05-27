@@ -1,10 +1,10 @@
 globwatcher
 ===========
 
-Globwatcher is a node library that monitors a filesystem based on glob
-patterns, and triggers events when a file is added, changed, or deleted. It's
-built on top of node's `fs.watch` mechanism, and uses the glob pattern syntax
-of the `glob` module.
+Globwatcher is a node library that monitors a filesystem for changes to files
+specified by glob patterns, and triggers events when a file is added, changed,
+or deleted. It's built on top of node's `fs.watch` mechanism, and uses the
+glob pattern syntax of the `glob` module.
 
 Sample usage:
 
