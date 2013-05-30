@@ -293,3 +293,13 @@ describe "globwatcher", ->
         summary.should.eql {
           added: [ "#{folder}/nested/deeper/ten.x" ]
         }
+
+  it "will watch a single, non-globbed file that doesn't exist", fixtures (folder) ->
+    summary = null
+    withGlobwatcher "#{folder}/nothing.x", (g) ->
+      summary = capture(g)
+      fs.writeFileSync "#{folder}/nothing.x", "hi!"
+      Q.delay(g.interval).then ->
+        summary.should.eql {
+          added: [ "#{folder}/nothing.x" ]
+        }

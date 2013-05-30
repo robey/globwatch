@@ -8,12 +8,15 @@ makePromise = require("./make_promise").makePromise
 
 
 class FileWatcher
-  constructor: (options={}) ->
+  constructor: (options_in={}) ->
+    options =
+      period: 250
+      persistent: true
+    for k, v of options_in then options[k] = v
     # frequency of stat() checking, in milliseconds
-    @period = options.period or 250
+    @period = options.period
     # should our timer keep the process alive?
-    @persistent = true
-    if options.persistent? then @persistent = options.persistent
+    @persistent = options.persistent
     # timer that periodically checks for file changes
     @timer = null
     # filename -> Watch
