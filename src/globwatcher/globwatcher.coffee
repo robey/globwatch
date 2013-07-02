@@ -42,11 +42,9 @@ class WatchMap
     delete @map[folderName]
 
   watchFile: (filename, parent) ->
-    if not parent? then parent = path.dirname(filename)
     (@map[parent] or= {})[filename] = true
 
   unwatchFile: (filename, parent) ->
-    if not parent? then parent = path.dirname(filename)
     delete @map[parent][filename]
 
   getFolders: -> Object.keys(@map)
@@ -54,9 +52,7 @@ class WatchMap
   getFilenames: (folderName) -> Object.keys(@map[folderName] or {})
 
   getAllFilenames: (folderName) ->
-    @getFilenames(folderName).concat(
-      f for f in @getFolders() when path.dirname(f) + "/" == folderName
-    )
+    @getFilenames(folderName)
 
   getNestedFolders: (folderName) ->
     f for f in @getFolders() when f[...(folderName.length)] == folderName
