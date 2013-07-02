@@ -17,7 +17,7 @@
   ],
 
   "scripts": {
-    "test": "plz test"
+    "test": "plz test -v --color"
   },
   "dependencies": {
     "coffee-script": "*",
@@ -34,7 +34,6 @@
   "main": "./lib/globwatcher",
   "files": [
     "build.plz",
-    "Cakefile",
     "lib",
     "test"
   ]
