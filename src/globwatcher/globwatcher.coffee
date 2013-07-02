@@ -160,9 +160,10 @@ class GlobWatcher extends events.EventEmitter
       # watch whole folder
       filename += "/"
       @watchMap.watchFolder(filename)
-    parent = path.dirname(filename)
-    if parent != "/" then parent += "/"
-    @watchMap.watchFile(filename, parent)
+    else
+      parent = path.dirname(filename)
+      if parent != "/" then parent += "/"
+      @watchMap.watchFile(filename, parent)
 
   stopWatches: ->
     for filename, watcher of @watchers then watcher.close()
@@ -198,6 +199,7 @@ class GlobWatcher extends events.EventEmitter
     return if @closed
     makePromise(fs.readdir)(folderName)
     .fail (error) =>
+      @debug "   ERR: #{error}"
       []
     .then (current) =>
       return if @closed
@@ -257,6 +259,7 @@ class GlobWatcher extends events.EventEmitter
     # if it potentially matches the prefix of a glob we're watching, start
     # watching it, and recursively check for new files.
     return null unless @folderIsInteresting(folderName)
+    @debug "folder added: #{folderName}"
     @watchMap.watchFolder(folderName)
     @watchFolder folderName
     @folderChanged(folderName)
