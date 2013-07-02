@@ -90,6 +90,8 @@ class GlobWatcher extends events.EventEmitter
     @patterns = []
     # minimatch sets for our patterns
     @minimatchSets = []
+    # set of folder watch events to check on after the debounce interval
+    @checkQueue = {}
     if typeof patterns == "string" then patterns = [ patterns ]
     @add(patterns...)
 
@@ -182,11 +184,17 @@ class GlobWatcher extends events.EventEmitter
     try
       @watchers[folderName] = fs.watch folderName, { persistent: @persistent }, (event) =>
         @debug "watch event: #{folderName}"
+        @checkQueue[folderName] = true
         # wait a short interval to make sure the new folder has some staying power.
-        setTimeout((=> @folderChanged(folderName)), @debounceInterval)
+        setTimeout((=> @scanQueue()), @debounceInterval)
     catch e
       # never mind.
-    
+  
+  scanQueue: ->
+    folders = Object.keys(@checkQueue)
+    @checkQueue = {}
+    for f in folders then @folderChanged(f)
+
   watchFile: (filename) ->
     @debug "watchFile: #{filename}"
     # FIXME @persistent @interval
