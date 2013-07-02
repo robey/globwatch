@@ -271,18 +271,24 @@ describe "globwatcher", ->
         }
 
   it "sees a new matching file even if the entire tree was erased and re-created", fixtures (folder) ->
-    shell.mkdir "-p", "#{folder}/nested/deeper"
-    touch.sync "#{folder}/nested/deeper/four.x"
+    shell.rm "-rf", "#{folder}/nested"
+    shell.mkdir "-p", "#{folder}/nested/deeper/still"
+    touch.sync "#{folder}/nested/deeper/still/four.x"
     summary = null
-    withGlobwatcher "#{folder}/nested/deeper/*.x", (g) ->
+    withGlobwatcher "#{folder}/**/*", (g) ->
       summary = capture(g)
       shell.rm "-r", "#{folder}/nested"
-      shell.mkdir "-p", "#{folder}/nested/deeper"
-      fs.writeFileSync "#{folder}/nested/deeper/ten.x", "wheeeeeee"
       g.check().then ->
         summary.should.eql {
-          deleted: [ "#{folder}/nested/deeper/four.x" ]
-          added: [ "#{folder}/nested/deeper/ten.x" ]
+          deleted: [ "#{folder}/nested/deeper/still/four.x" ]
+        }
+        delete summary.deleted
+        shell.mkdir "-p", "#{folder}/nested/deeper/still"
+        fs.writeFileSync "#{folder}/nested/deeper/still/ten.x", "wheeeeeee"
+        g.check()
+      .then ->
+        summary.should.eql {
+          added: [ "#{folder}/nested/deeper/still/ten.x" ]
         }
 
   it "sees a new matching file even if the folder exists but was empty", fixtures (folder) ->
