@@ -123,9 +123,11 @@ describe "globwatcher", ->
     withGlobwatcher "#{folder}/**/*.x", (g) ->
       summary = capture(g)
       g.stopWatches()
-      touch.sync "#{folder}/nested/four.x"
-      touch.sync "#{folder}/sub/not-me.txt"
-      g.check().then ->
+      Q.delay(10).then ->
+        touch.sync "#{folder}/nested/four.x"
+        touch.sync "#{folder}/sub/not-me.txt"
+        g.check()
+      .then ->
         # just in case, make sure the timer goes off too
         Q.delay(g.interval * 2)
       .then ->
