@@ -1,13 +1,9 @@
 
-task "build", description: "compile coffeescript", run: ->
-  mkdir "-p", "lib"
-  exec "coffee -o lib -c src"
+load "coffee"
+load "mocha"
 
-task "test", description: "run unit tests", watch: "lib/**/*", run: (options) ->
-  display = options.display or "spec"
-  # watch is very very slow, so allow for deathly slow tests.
-  speed = "--timeout 5000 --slow 5000"
-  exec "./node_modules/mocha/bin/mocha #{speed} -R #{display} --compilers coffee:coffee-script --colors"
+# watch is very very slow, so allow for deathly slow tests.
+settings.mocha.options.push "--timeout 5000 --slow 5000"
 
 task "clean", description: "erase built files", run: ->
   rm "-rf", "lib"
