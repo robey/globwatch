@@ -1,6 +1,8 @@
 globwatcher
 ===========
 
+[![Build Status](https://travis-ci.org/robey/globwatcher.png?branch=master)](https://travis-ci.org/robey/globwatcher)
+
 Globwatcher is a node library that monitors a filesystem for changes to files
 specified by glob patterns, and triggers events when a file is added, changed,
 or deleted. It's built on top of node's `fs.watch` mechanism, and uses the
