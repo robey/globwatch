@@ -311,3 +311,22 @@ describe "globwatcher", ->
         summary.should.eql {
           added: [ "#{folder}/nothing.x" ]
         }
+
+  it "currentSet", fixtures (folder) ->
+    withGlobwatcher "#{folder}/**/*.x", (g) ->
+      g.currentSet().sort().should.eql [
+        "#{folder}/nested/three.x"
+        "#{folder}/one.x"
+        "#{folder}/sub/one.x"
+        "#{folder}/sub/two.x"
+      ]
+      shell.rm "#{folder}/sub/one.x"
+      fs.writeFileSync "#{folder}/whatevs.x"
+      g.check().then ->
+        g.currentSet().sort().should.eql [
+          "#{folder}/nested/three.x"
+          "#{folder}/one.x"
+          "#{folder}/sub/two.x"
+          "#{folder}/whatevs.x"
+        ]
+

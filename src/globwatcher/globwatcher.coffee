@@ -51,8 +51,11 @@ class WatchMap
 
   getFilenames: (folderName) -> Object.keys(@map[folderName] or {})
 
-  getAllFilenames: (folderName) ->
-    @getFilenames(folderName)
+  getAllFilenames: ->
+    rv = []
+    for folder in @getFolders()
+      rv = rv.concat(@getFilenames(folder))
+    rv
 
   getNestedFolders: (folderName) ->
     f for f in @getFolders() when f[...(folderName.length)] == folderName
@@ -130,6 +133,9 @@ class GlobWatcher extends events.EventEmitter
     folders = (Object.keys(@watchers).map (folderName) => @folderChanged(folderName))
     Q.all([ @fileWatcher.check() ].concat(folders)).then =>
       @debug "<- check"
+
+  # what files exist *right now* that match the watches?
+  currentSet: -> @watchMap.getAllFilenames()
 
   # ----- internals:
 
@@ -219,7 +225,7 @@ class GlobWatcher extends events.EventEmitter
         catch e
           # file vanished before we could stat it!
         filename
-      previous = @watchMap.getAllFilenames(folderName)
+      previous = @watchMap.getFilenames(folderName)
 
       # deleted files/folders
       for f in previous.filter((x) -> current.indexOf(x) < 0)
