@@ -31,7 +31,7 @@ the given pattern, and trigger events. The `options` object can contain:
 
 - `cwd` - folder to use for relative patterns. If not given, the process's
   current working directory is used. Absolute patterns (patterns that start
-  with "/") don't used this option.
+  with "/") don't use this option.
 
 - `interval` - frequency (in milliseconds) to monitor existing files for
   changes. Default is 250, or 1/4 second.
