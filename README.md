@@ -76,6 +76,9 @@ Useful methods:
   the event signalled by globwatcher. Returns a promise that is fulfilled
   when the check is finished.
 
+- `currentSet()` - Return the set of filenames that currently exist and match
+  the glob pattern being scanned. The filenames are all absolute.
+
 Events signalled:
 
 - `added(filename)` - a new file that matches one of the watched patterns was
