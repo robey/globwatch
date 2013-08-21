@@ -1,3 +1,7 @@
+## 1.2.0 (21 august 2013)
+
+- added snapshot(), for storing state between runs
+
 ## 1.1.0 (18 august 2013)
 
 - added currentSet(), to get the set of filenames that currently exist
