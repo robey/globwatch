@@ -55,7 +55,7 @@ Useful methods:
 
 - `add(patterns...)` - Add new glob patterns to be scanned. This will reset
   the `ready` promise (described above) so that it's fulfilled only when this
-  new set of patters are active.
+  new set of patterns are active.
 
 - `close()` - Stop monitoring and free all resources. No new events will be
   sent after this call returns, and all "watch" resources will be freed.
