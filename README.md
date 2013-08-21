@@ -41,6 +41,9 @@ the given pattern, and trigger events. The `options` object can contain:
   alleviate thundering-herd problems where many files may be created or
   deleted in a short period. Default is 10 milliseconds.
 
+- `snapshot` - previous state to resume from, as captured with `snapshot()`
+  (see "Snapshots" below).
+
 - `debug` - a function to call to log debug info while running. This function
   will be called with a string to log whenever certain changes or events
   occur, so it can be noisy, but may be useful for general debugging.
@@ -78,6 +81,9 @@ Useful methods:
 
 - `currentSet()` - Return the set of filenames that currently exist and match
   the glob pattern being scanned. The filenames are all absolute.
+
+- `snapshot()` - Return an object representing the current state of watched
+  folders and files. (See "Snapshots" below.)
 
 Events signalled:
 
@@ -156,6 +162,29 @@ OS-level watches are only placed on folders, since they're the only ones
 guaranteed to work, and they only trigger a re-scan of the folder contents.
 Any matching filenames are watched with file-level watches, which are
 implemented in `FileWatcher`.
+
+Snapshots
+---------
+
+The current state of a globwatcher can be captured with `snapshot()`, which
+returns an object containing metadata about files that currently match. This
+lets you "resume" a session later, potentially in a new process or at a much
+later date.
+
+To resume watching, pass the snapshot object as a `snapshot` option into a
+new globwatcher:
+
+```javascript
+var watcher = globwatcher("/albums/**/*.mp3");
+var snapshot = watcher.snapshot();
+// ... time passes ...
+val newWatcher = globwatcher("/albums/**/*.mp3", { "snapshot": snapshot });
+```
+
+When restoring from a snapshot, globwatcher will wait for the debounce
+interval to pass, then scan the filesystem and trigger events for any files
+that have changed since the snapshot. (Naturally, this may have odd results
+if your match patterns have changed.)
 
 Caveats
 -------
