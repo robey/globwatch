@@ -30,11 +30,11 @@ class FileWatcher
       clearInterval(@timer)
       @timer = null
 
-  watch: (filename) ->
+  watch: (filename, mtime = null, size = null) ->
     filename = path.resolve(filename)
     watch = @watches[filename]
     if not watch?
-      watch = @watches[filename] = new Watch(filename)
+      watch = @watches[filename] = new Watch(filename, mtime, size)
     if not @timer?
       @timer = setInterval((=> @check()), @period)
       if not @persistent then @timer.unref()
@@ -63,19 +63,29 @@ class FileWatcher
 
 
 class Watch extends events.EventEmitter
-  constructor: (@filename) ->
-    @stat = null
+  constructor: (@filename, @mtime, @size) ->
     @callbacks = []
-    @stat = fs.statSync @filename
+    if not (@mtime? and @size?)
+      try
+        stat = fs.statSync @filename
+        @mtime = stat.mtime.getTime()
+        @size = stat.size
+      catch e
+        # nevermind.
 
   check: ->
     makePromise(fs.stat)(@filename)
     .fail (error) ->
       null
     .then (stat) =>
-      if @stat? and stat? and (@stat.mtime.getTime() != stat.mtime.getTime() or @stat.size != stat.size)
+      if @mtime? and stat? and (@mtime != stat.mtime.getTime() or @size != stat.size)
         @emit 'changed', stat
-      @stat = stat
+      if stat?
+        @mtime = stat.mtime.getTime()
+        @size = stat.size
+      else
+        @mtime = null
+        @size = null
 
 
 exports.FileWatcher = FileWatcher

@@ -28,9 +28,8 @@ exports.folderMatchesMinimatchPrefix = folderMatchesMinimatchPrefix
 # set of (absolute) filenames in that folder that are being file-level
 # watched.
 class WatchMap
-  constructor: ->
-    # folderName -> (filename -> true)
-    @map = {}
+  constructor: (@map = {}) ->
+    # @map: folderName -> (filename -> true)
 
   clear: ->
     @map = {}
@@ -96,18 +95,11 @@ class GlobWatcher extends events.EventEmitter
     # set of folder watch events to check on after the debounce interval
     @checkQueue = {}
     if typeof patterns == "string" then patterns = [ patterns ]
-    @add(patterns...)
+    if options.state then @restoreFrom(options.state, patterns) else @add(patterns...)
 
   add: (patterns...) ->
     @debug "add: #{util.inspect(patterns)}"
-    for p in patterns
-      p = @absolutePath(p)
-      if @patterns.indexOf(p) < 0 then @patterns.push(p)
-    @minimatchSets = []
-    for p in @patterns
-      @minimatchSets = @minimatchSets.concat(new minimatch.Minimatch(p, nonegate: true).set)
-    for set in @minimatchSets then @watchPrefix(set)
-
+    @addPatterns(patterns)
     @ready = Q.all(
       for p in @patterns
         makePromise(glob)(p, nonegate: true).then (files) =>
@@ -137,7 +129,44 @@ class GlobWatcher extends events.EventEmitter
   # what files exist *right now* that match the watches?
   currentSet: -> @watchMap.getAllFilenames()
 
+  # filename -> { mtime size }
+  snapshot: ->
+    state = {}
+    for filename in @watchMap.getAllFilenames()
+      w = @fileWatcher.watchFor(filename)
+      if w? then state[filename] = { mtime: w.mtime, size: w.size }
+    state
+
+
   # ----- internals:
+
+  # restore from a { filename -> { mtime size } } snapshot
+  restoreFrom: (state, patterns) ->
+    @addPatterns(patterns)
+    for filename in Object.keys(state)
+      folderName = path.dirname(filename)
+      if folderName != "/" then folderName += "/"
+      @watchMap.watchFile(filename, folderName)
+    # now, start watches
+    for folderName in @watchMap.getFolders()
+      @watchFolder folderName
+    for filename in Object.keys(state)
+      @watchFile filename, state[filename].mtime, state[filename].size
+    # give a little delay to wait for things to calm down
+    @ready = Q.delay(@debounceInterval).then =>
+      @debug "restore complete: #{util.inspect(patterns)}"
+      @check()
+    .then =>
+      @
+
+  addPatterns: (patterns) ->
+    for p in patterns
+      p = @absolutePath(p)
+      if @patterns.indexOf(p) < 0 then @patterns.push(p)
+    @minimatchSets = []
+    for p in @patterns
+      @minimatchSets = @minimatchSets.concat(new minimatch.Minimatch(p, nonegate: true).set)
+    for set in @minimatchSets then @watchPrefix(set)
 
   # make sure we are watching at least the non-glob prefix of this pattern,
   # in case the pattern represents a folder that doesn't exist yet.
@@ -201,10 +230,10 @@ class GlobWatcher extends events.EventEmitter
     @checkQueue = {}
     for f in folders then @folderChanged(f)
 
-  watchFile: (filename) ->
+  watchFile: (filename, mtime = null, size = null) ->
     @debug "watchFile: #{filename}"
     # FIXME @persistent @interval
-    @fileWatcher.watch(filename).on 'changed', =>
+    @fileWatcher.watch(filename, mtime, size).on 'changed', =>
       @debug "watchFile event: #{filename}"
       @emit 'changed', filename
 

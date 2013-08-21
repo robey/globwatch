@@ -15,8 +15,8 @@ globwatcher = require("../lib/globwatcher/globwatcher")
 
 dump = (x) -> util.inspect x, false, null, true
 
-makeFixtures = (folder) ->
-  past = Date.now() - 1000
+makeFixtures = (folder, ts) ->
+  if not ts? then ts = Date.now() - 1000
   [
     "#{folder}/one.x"
     "#{folder}/sub/one.x"
@@ -25,7 +25,7 @@ makeFixtures = (folder) ->
     "#{folder}/nested/weird.jpg"
   ].map (file) ->
     shell.mkdir "-p", path.dirname(file)
-    touch.sync file, mtime: past
+    touch.sync file, mtime: ts
 
 fixtures = (f) ->
   futureTest withTempFolder (folder) ->
@@ -123,7 +123,7 @@ describe "globwatcher", ->
     withGlobwatcher "#{folder}/**/*.x", (g) ->
       summary = capture(g)
       g.stopWatches()
-      Q.delay(10).then ->
+      Q.delay(25).then ->
         touch.sync "#{folder}/nested/four.x"
         touch.sync "#{folder}/sub/not-me.txt"
         g.check()
@@ -312,7 +312,7 @@ describe "globwatcher", ->
           added: [ "#{folder}/nothing.x" ]
         }
 
-  it "currentSet", fixtures (folder) ->
+  it "returns a currentSet", fixtures (folder) ->
     withGlobwatcher "#{folder}/**/*.x", (g) ->
       g.currentSet().sort().should.eql [
         "#{folder}/nested/three.x"
@@ -329,4 +329,37 @@ describe "globwatcher", ->
           "#{folder}/sub/two.x"
           "#{folder}/whatevs.x"
         ]
+
+  it "takes a snapshot", fixtures (folder) ->
+    withGlobwatcher "#{folder}/**/*.x", (g) ->
+      ts = fs.statSync("#{folder}/one.x").mtime.getTime()
+      fs.writeFileSync "#{folder}/wut.x", "hello"
+      touch.sync "#{folder}/wut.x", mtime: ts
+      g.check().then ->
+        snapshot = g.snapshot()
+        snapshot["#{folder}/one.x"].should.eql(mtime: ts, size: 0)
+        snapshot["#{folder}/wut.x"].should.eql(mtime: ts, size: 5)
+        snapshot["#{folder}/nested/three.x"].should.eql(mtime: ts, size: 0)
+        snapshot["#{folder}/sub/one.x"].should.eql(mtime: ts, size: 0)
+        snapshot["#{folder}/sub/two.x"].should.eql(mtime: ts, size: 0)
+
+  it "resumes from a snapshot", fixtures (folder) ->
+    withGlobwatcher "#{folder}/**/*.x", (g) ->
+      summary = null
+      snapshot = g.snapshot()
+      g.close()
+      Q.delay(100).then ->
+        fs.writeFileSync "#{folder}/one.x", "hello"
+        shell.rm "#{folder}/sub/two.x"
+        touch.sync "#{folder}/sub/nine.x"
+        g = globwatcher.globwatcher("#{folder}/**/*.x", persistent: false, state: snapshot)
+        summary = capture(g)
+        g.ready
+      .then ->
+        summary.should.eql {
+          added: [ "#{folder}/sub/nine.x" ]
+          changed: [ "#{folder}/one.x" ]
+          deleted: [ "#{folder}/sub/two.x" ]
+        }
+
 
