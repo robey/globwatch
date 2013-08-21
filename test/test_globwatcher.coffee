@@ -352,7 +352,7 @@ describe "globwatcher", ->
         fs.writeFileSync "#{folder}/one.x", "hello"
         shell.rm "#{folder}/sub/two.x"
         touch.sync "#{folder}/sub/nine.x"
-        g = globwatcher.globwatcher("#{folder}/**/*.x", persistent: false, state: snapshot)
+        g = globwatcher.globwatcher("#{folder}/**/*.x", persistent: false, snapshot: snapshot)
         summary = capture(g)
         g.ready
       .then ->
