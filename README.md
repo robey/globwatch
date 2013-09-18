@@ -44,6 +44,9 @@ the given pattern, and trigger events. The `options` object can contain:
 - `snapshot` - previous state to resume from, as captured with `snapshot()`
   (see "Snapshots" below).
 
+- `persistent` - if false, unref the watches so they don't keep node running.
+  Default is false.
+
 - `debug` - a function to call to log debug info while running. This function
   will be called with a string to log whenever certain changes or events
   occur, so it can be noisy, but may be useful for general debugging.
