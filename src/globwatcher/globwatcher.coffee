@@ -95,6 +95,7 @@ class GlobWatcher extends events.EventEmitter
     # set of folder watch events to check on after the debounce interval
     @checkQueue = {}
     if typeof patterns == "string" then patterns = [ patterns ]
+    @originalPatterns = patterns
     if options.snapshot then @restoreFrom(options.snapshot, patterns) else @add(patterns...)
 
   add: (patterns...) ->
