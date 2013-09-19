@@ -24,10 +24,11 @@ watcher.ready.then(function () {
 API
 ---
 
-### `globwatcher(pattern, options)`
+### `globwatcher(patterns, options)`
 
 Create a new `GlobWatcher` object, which will monitor for files that match
-the given pattern, and trigger events. The `options` object can contain:
+the given patterns (or a single pattern), and trigger events. The `options`
+object can contain:
 
 - `cwd` - folder to use for relative patterns. If not given, the process's
   current working directory is used. Absolute patterns (patterns that start
@@ -56,6 +57,9 @@ Useful fields:
 - `ready` - a promise that will be fulfilled once all the watches have been
   created and the initial scan is complete. This can be used to run code that
   depends on globwatcher being active.
+
+- `originalPatterns` - the original (non-normalized) patterns used to create
+  this globwatcher, including any added with `add()`.
 
 Useful methods:
 

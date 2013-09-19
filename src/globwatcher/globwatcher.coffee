@@ -100,6 +100,7 @@ class GlobWatcher extends events.EventEmitter
 
   add: (patterns...) ->
     @debug "add: #{util.inspect(patterns)}"
+    @originalPatterns = @originalPatterns.concat(patterns)
     @addPatterns(patterns)
     @ready = Q.all(
       for p in @patterns
