@@ -1,4 +1,5 @@
 fs = require 'fs'
+mocha_sprinkles = require 'mocha-sprinkles'
 path = require 'path'
 Q = require 'q'
 shell = require 'shelljs'
@@ -6,9 +7,8 @@ should = require 'should'
 touch = require 'touch'
 util = require 'util'
 
-test_util = require("./test_util")
-futureTest = test_util.futureTest
-withTempFolder = test_util.withTempFolder
+future = mocha_sprinkles.future
+withTempFolder = mocha_sprinkles.withTempFolder
 
 FileWatcher = require("../lib/globwatcher/filewatcher").FileWatcher
 
@@ -25,7 +25,7 @@ makeFixtures = (folder) ->
     touch.sync file, mtime: past
 
 fixtures = (f) ->
-  futureTest withTempFolder (folder) ->
+  future withTempFolder (folder) ->
     makeFixtures(folder)
     f(folder)
 
@@ -103,7 +103,7 @@ describe "FileWatcher", ->
     visited[1].should.eql(false)
     Q.all([ x1, x2 ])
 
-  it "detects size changes", futureTest withTempFolder withFileWatcher (watcher, folder) ->
+  it "detects size changes", future withTempFolder withFileWatcher (watcher, folder) ->
     now = Date.now() - 15000
     write = (data) ->
       fs.writeFileSync("#{folder}/shifty.x", data)
@@ -120,7 +120,7 @@ describe "FileWatcher", ->
     .then ->
       count.should.eql(1)
 
-  it "can unwatch", futureTest withTempFolder withFileWatcher (watcher, folder) ->
+  it "can unwatch", future withTempFolder withFileWatcher (watcher, folder) ->
     touch.sync "#{folder}/changes.x", mtime: Date.now() - 15000
     watch = watcher.watch "#{folder}/changes.x"
     count = 0

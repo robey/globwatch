@@ -1,5 +1,6 @@
 fs = require 'fs'
 minimatch = require 'minimatch'
+mocha_sprinkles = require 'mocha-sprinkles'
 path = require 'path'
 Q = require 'q'
 shell = require 'shelljs'
@@ -7,9 +8,8 @@ should = require 'should'
 touch = require 'touch'
 util = require 'util'
 
-test_util = require("./test_util")
-futureTest = test_util.futureTest
-withTempFolder = test_util.withTempFolder
+future = mocha_sprinkles.future
+withTempFolder = mocha_sprinkles.withTempFolder
 
 globwatcher = require("../lib/globwatcher/globwatcher")
 
@@ -28,7 +28,7 @@ makeFixtures = (folder, ts) ->
     touch.sync file, mtime: ts
 
 fixtures = (f) ->
-  futureTest withTempFolder (folder) ->
+  future withTempFolder (folder) ->
     makeFixtures(folder)
     f(folder)
 
@@ -73,7 +73,7 @@ describe "globwatcher", ->
     globwatcher.folderMatchesMinimatchPrefix([ "", "home", "commie", "lola" ], set).should.equal(true)
     globwatcher.folderMatchesMinimatchPrefix([ "", "home", "commie", "lola", "prissy" ], set).should.equal(false)
 
-  it "addWatch", futureTest ->
+  it "addWatch", future ->
     withGlobwatcher "/wut", (g) ->
       for f in [
         "/absolute.txt"
@@ -248,7 +248,7 @@ describe "globwatcher", ->
     withGlobwatcher "#{folder}/not/there/*", (g) ->
       3.should.equal(3)
 
-  it "sees a new matching file even if the whole folder was missing when it started", futureTest withTempFolder (folder) ->
+  it "sees a new matching file even if the whole folder was missing when it started", future withTempFolder (folder) ->
     summary = null
     withGlobwatcher "#{folder}/not/there/*", (g) ->
       summary = capture(g)
