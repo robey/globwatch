@@ -330,18 +330,32 @@ describe "globwatcher", ->
           "#{folder}/whatevs.x"
         ]
 
-  it "takes a snapshot", fixtures (folder) ->
-    withGlobwatcher "#{folder}/**/*.x", (g) ->
-      ts = fs.statSync("#{folder}/one.x").mtime.getTime()
-      fs.writeFileSync "#{folder}/wut.x", "hello"
-      touch.sync "#{folder}/wut.x", mtime: ts
-      g.check().then ->
-        snapshot = g.snapshot()
-        snapshot["#{folder}/one.x"].should.eql(mtime: ts, size: 0)
-        snapshot["#{folder}/wut.x"].should.eql(mtime: ts, size: 5)
-        snapshot["#{folder}/nested/three.x"].should.eql(mtime: ts, size: 0)
-        snapshot["#{folder}/sub/one.x"].should.eql(mtime: ts, size: 0)
-        snapshot["#{folder}/sub/two.x"].should.eql(mtime: ts, size: 0)
+  describe "takes a snapshot", ->
+    it "of globs", fixtures (folder) ->
+      withGlobwatcher "#{folder}/**/*.x", { snapshot: {} }, (g) ->
+        ts = fs.statSync("#{folder}/one.x").mtime.getTime()
+        fs.writeFileSync "#{folder}/wut.x", "hello"
+        touch.sync "#{folder}/wut.x", mtime: ts
+        g.check().then ->
+          snapshot = g.snapshot()
+          snapshot["#{folder}/one.x"].should.eql(mtime: ts, size: 0)
+          snapshot["#{folder}/wut.x"].should.eql(mtime: ts, size: 5)
+          snapshot["#{folder}/nested/three.x"].should.eql(mtime: ts, size: 0)
+          snapshot["#{folder}/sub/one.x"].should.eql(mtime: ts, size: 0)
+          snapshot["#{folder}/sub/two.x"].should.eql(mtime: ts, size: 0)
+
+    it "of normal files", fixtures (folder) ->
+      withGlobwatcher "#{folder}/sub/two.x", { snapshot: {} }, (g) ->
+        ts = fs.statSync("#{folder}/sub/two.x").mtime.getTime()
+        g.check().then ->
+          snapshot = g.snapshot()
+          snapshot["#{folder}/sub/two.x"].should.eql(mtime: ts, size: 0)
+          fs.writeFileSync("#{folder}/sub/two.x", "new!")
+          ts = fs.statSync("#{folder}/sub/two.x").mtime.getTime()
+          withGlobwatcher "#{folder}/sub/two.x", { snapshot }, (g) ->
+            g.check().then ->
+              snapshot = g.snapshot()
+              snapshot["#{folder}/sub/two.x"].should.eql(mtime: ts, size: 4)
 
   it "resumes from a snapshot", fixtures (folder) ->
     withGlobwatcher "#{folder}/**/*.x", (g) ->
@@ -361,5 +375,3 @@ describe "globwatcher", ->
           changed: [ "#{folder}/one.x" ]
           deleted: [ "#{folder}/sub/two.x" ]
         }
-
-

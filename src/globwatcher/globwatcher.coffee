@@ -175,13 +175,16 @@ class GlobWatcher extends events.EventEmitter
   watchPrefix: (minimatchSet) ->
     index = 0
     while index < minimatchSet.length and typeof minimatchSet[index] == "string" then index += 1
+    if index == minimatchSet.length then index -= 1
     prefix = path.join("/", minimatchSet[...index]...)
     parent = path.dirname(prefix)
     # if the prefix doesn't exist, backtrack within reason (don't watch "/").
     while not fs.existsSync(prefix) and parent != path.dirname(parent)
       prefix = path.dirname(prefix)
       parent = path.dirname(parent)
-    if fs.existsSync(prefix) then @watchMap.watchFolder(prefix + "/")
+    if fs.existsSync(prefix)
+      if prefix[prefix.length - 1] != "/" then prefix += "/"
+      @watchMap.watchFolder(prefix)
 
   absolutePath: (p) ->
     if p[0] == '/' then p else path.join(@cwd, p)
