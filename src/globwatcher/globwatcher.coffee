@@ -119,6 +119,7 @@ class GlobWatcher extends events.EventEmitter
     @debug "close"
     @stopWatches()
     @watchMap.clear()
+    @fileWatcher.close()
     @closed = true
 
   # scan every covered folder again to see if there were any changes.
