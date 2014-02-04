@@ -2,7 +2,9 @@
   "name": "globwatcher",
   "version": "1.2.2",
   "description": "watch a set of files for changes (including create/delete) by glob patterns",
-  "keywords": [ "watch" ],
+  "keywords": [
+    "watch"
+  ],
   "author": "Robey Pointer <robeypointer@gmail.com>",
   "homepage": "https://github.com/robey/globwatcher",
   "repository": {
@@ -15,22 +17,23 @@
       "url": "http://www.apache.org/licenses/LICENSE-2.0.txt"
     }
   ],
-
   "scripts": {
+    "build": "plz build",
     "test": "plz test -v --color"
   },
   "dependencies": {
-    "coffee-script": "*",
     "glob": "*",
     "minimatch": "*",
     "q": "*"
   },
   "devDependencies": {
+    "coffee-script": "*",
     "mocha": "*",
     "mocha-sprinkles": "*",
     "shelljs": "*",
     "should": "*",
-    "touch": "*"
+    "touch": "*",
+    "plz": "1.0.0"
   },
   "main": "./lib/globwatcher",
   "files": [
