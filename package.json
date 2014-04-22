@@ -1,6 +1,6 @@
 {
   "name": "globwatcher",
-  "version": "1.2.2",
+  "version": "1.2.3",
   "description": "watch a set of files for changes (including create/delete) by glob patterns",
   "keywords": [ "watch" ],
   "author": "Robey Pointer <robeypointer@gmail.com>",
@@ -17,17 +17,18 @@
   ],
 
   "scripts": {
-    "test": "plz test -v --color"
+    "test": "./node_modules/.bin/plz test -v --color"
   },
   "dependencies": {
     "coffee-script": "*",
     "glob": "*",
     "minimatch": "*",
-    "q": "*"
+    "q": "^1.0.1"
   },
   "devDependencies": {
     "mocha": "*",
     "mocha-sprinkles": "*",
+    "plz": "^2.0.0",
     "shelljs": "*",
     "should": "*",
     "touch": "*"

@@ -1,3 +1,7 @@
+## 1.2.3 (22 apr 2013)
+
+- pinned Q at version 1.x.
+
 ## 1.2.2 (27 oct 2013)
 
 - fix bug where a pattern with no globs (just listing a file) wouldn't be
