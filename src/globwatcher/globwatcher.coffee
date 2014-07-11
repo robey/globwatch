@@ -83,6 +83,7 @@ class GlobWatcher extends events.EventEmitter
     @interval = options.interval or 250
     @debug = options.debug or (->)
     @persistent = options.persistent or false
+    @emitFolders = options.emitFolders or false
     @watchMap = new WatchMap
     @fileWatcher = new FileWatcher(options)
     # map of (absolute) folderName -> FSWatcher
@@ -247,6 +248,7 @@ class GlobWatcher extends events.EventEmitter
     return if @closed
     Q.denodeify(fs.readdir)(folderName)
     .fail (error) =>
+      if @emitFolders then @emit 'deleted', folderName
       @debug "   ERR: #{error}"
       []
     .then (current) =>
@@ -260,6 +262,7 @@ class GlobWatcher extends events.EventEmitter
           # file vanished before we could stat it!
         filename
       previous = @watchMap.getFilenames(folderName)
+      if previous.length == 0 and @emitFolders then @emit 'added', folderName
 
       # deleted files/folders
       for f in previous.filter((x) -> current.indexOf(x) < 0)

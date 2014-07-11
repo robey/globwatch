@@ -302,6 +302,18 @@ describe "globwatcher", ->
           added: [ "#{folder}/nested/deeper/ten.x" ]
         }
 
+  it "emits signals for folders when asked", fixtures (folder) ->
+    summary = null
+    withGlobwatcher "#{folder}/**/*", { emitFolders: true }, (g) ->
+      summary = capture(g)
+      shell.mkdir "-p", "#{folder}/newfolder"
+      shell.rm "-r", "#{folder}/nested"
+      g.check().then ->
+        summary.should.eql {
+          added: [ "#{folder}/newfolder/" ]
+          deleted: [ "#{folder}/nested/", "#{folder}/nested/three.x", "#{folder}/nested/weird.jpg" ]
+        }
+
   it "will watch a single, non-globbed file that doesn't exist", fixtures (folder) ->
     summary = null
     withGlobwatcher "#{folder}/nothing.x", (g) ->
