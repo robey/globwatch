@@ -74,7 +74,7 @@ describe "globwatcher", ->
     globwatcher.folderMatchesMinimatchPrefix([ "", "home", "commie", "lola", "prissy" ], set).should.equal(false)
 
   it "addWatch", future ->
-    withGlobwatcher "/wut", (g) ->
+    withGlobwatcher "/~~nonexistent~~", (g) ->
       for f in [
         "/absolute.txt"
         "/sub/absolute.txt"
