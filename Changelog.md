@@ -1,3 +1,8 @@
+## 1.3.0 (11 jul 2014)
+
+- added `emitFolders` flag to ask for `added`/`removed` events to be emitted
+  for folders, too.
+
 ## 1.2.3 (22 apr 2013)
 
 - pinned Q at version 1.x.

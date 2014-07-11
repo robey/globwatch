@@ -42,6 +42,9 @@ object can contain:
   alleviate thundering-herd problems where many files may be created or
   deleted in a short period. Default is 10 milliseconds.
 
+- `emitFolders` - if true, emit `added` and `deleted` signals for folders
+  too. Folder filenames will always end in "/".
+
 - `snapshot` - previous state to resume from, as captured with `snapshot()`
   (see "Snapshots" below).
 
