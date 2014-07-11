@@ -6,7 +6,6 @@ path = require 'path'
 Q = require 'q'
 util = require 'util'
 
-makePromise = require("./make_promise").makePromise
 FileWatcher = require("./filewatcher").FileWatcher
 
 # FIXME this should probably be in a minimatch wrapper class
@@ -104,7 +103,7 @@ class GlobWatcher extends events.EventEmitter
     @addPatterns(patterns)
     @ready = Q.all(
       for p in @patterns
-        makePromise(glob)(p, nonegate: true).then (files) =>
+        Q.denodeify(glob)(p, nonegate: true).then (files) =>
           for filename in files then @addWatch(filename)
     ).then =>
       @stopWatches()
@@ -246,7 +245,7 @@ class GlobWatcher extends events.EventEmitter
   folderChanged: (folderName) ->
     @debug "-> check folder: #{folderName}"
     return if @closed
-    makePromise(fs.readdir)(folderName)
+    Q.denodeify(fs.readdir)(folderName)
     .fail (error) =>
       @debug "   ERR: #{error}"
       []

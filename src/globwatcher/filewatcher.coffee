@@ -4,8 +4,6 @@ path = require 'path'
 Q = require 'q'
 util = require 'util'
 
-makePromise = require("./make_promise").makePromise
-
 
 class FileWatcher
   constructor: (options_in={}) ->
@@ -74,7 +72,7 @@ class Watch extends events.EventEmitter
         # nevermind.
 
   check: ->
-    makePromise(fs.stat)(@filename)
+    Q.denodeify(fs.stat)(@filename)
     .fail (error) ->
       null
     .then (stat) =>
