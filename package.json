@@ -15,7 +15,6 @@
       "url": "http://www.apache.org/licenses/LICENSE-2.0.txt"
     }
   ],
-
   "scripts": {
     "build": "./node_modules/.bin/plz build",
     "test": "./node_modules/.bin/plz test -v --color"

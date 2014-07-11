@@ -1,3 +1,7 @@
+## 1.3.1 (11 jul 2014)
+
+- coffee-script is not a dependency, just a dev dependency. [ceejbot]
+
 ## 1.3.0 (11 jul 2014)
 
 - added `emitFolders` flag to ask for `added`/`removed` events to be emitted
