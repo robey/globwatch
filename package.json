@@ -16,21 +16,26 @@
     }
   ],
   "scripts": {
+    "prepublish": "6to5 --source-maps --out-dir lib src && 6to5 --source-maps --out-dir test/lib test/src",
     "build": "./node_modules/.bin/plz build",
-    "test": "./node_modules/.bin/plz test -v --color"
+    "testx": "./node_modules/.bin/plz test -v --color",
+    "test": "mocha -R spec --colors test/lib"
   },
   "dependencies": {
+    "bluebird": "*",
     "glob": "*",
-    "minimatch": "*",
-    "q": "^1.0.1"
+    "lodash": "*",
+    "minimatch": "*"
   },
   "devDependencies": {
+    "6to5": "*",
     "coffee-script": "^1.7",
     "mocha": "*",
     "mocha-sprinkles": "*",
     "plz": "^2.0.3",
     "shelljs": "*",
     "should": "*",
+    "source-map-support": "*",
     "touch": "*"
   },
   "main": "./lib/globwatcher",
