@@ -1,3 +1,7 @@
+## 1.4.0 (17 feb 2015)
+
+- convert from coffee-script to ES6
+
 ## 1.3.1 (11 jul 2014)
 
 - coffee-script is not a dependency, just a dev dependency. [ceejbot]
