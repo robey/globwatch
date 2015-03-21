@@ -18,7 +18,9 @@
     }
   ],
   "scripts": {
-    "prepublish": "6to5 --source-maps --out-dir lib src && 6to5 --source-maps --out-dir test/lib test/src",
+    "clean": "rm -rf lib test/lib",
+    "distclean": "npm run clean && rm -rf node_modules npm-debug.log",
+    "prepublish": "babel --source-maps --out-dir lib src && babel --source-maps --out-dir test/lib test/src",
     "build": "./node_modules/.bin/plz build",
     "testx": "./node_modules/.bin/plz test -v --color",
     "test": "mocha -R spec --colors test/lib"
@@ -30,11 +32,9 @@
     "minimatch": "*"
   },
   "devDependencies": {
-    "6to5": "*",
-    "coffee-script": "^1.7",
+    "babel": "*",
     "mocha": "*",
     "mocha-sprinkles": "*",
-    "plz": "^2.0.3",
     "shelljs": "*",
     "should": "*",
     "source-map-support": "*",
