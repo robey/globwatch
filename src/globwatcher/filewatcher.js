@@ -71,6 +71,7 @@ class FileWatcher {
 
 class Watch extends events.EventEmitter {
   constructor(filename, mtime, size) {
+    super();
     this.filename = filename;
     this.mtime = mtime;
     this.size = size;

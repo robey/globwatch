@@ -75,7 +75,7 @@ class WatchMap {
 
   getFilenames(folderName) {
     return Object.keys(this.map[folderName] || {});
-  } 
+  }
 
   getAllFilenames() {
     let rv = [];
@@ -118,6 +118,7 @@ exports.globwatcher = globwatcher;
 
 class GlobWatcher extends events.EventEmitter {
   constructor(patterns, options = {}) {
+    super();
     this.closed = false;
     this.cwd = options.cwd || process.cwd();
     this.debounceInterval = options.debounceInterval || 10;
