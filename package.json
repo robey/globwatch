@@ -1,6 +1,6 @@
 {
   "name": "globwatcher",
-  "version": "1.4.0",
+  "version": "1.4.1",
   "description": "watch a set of files for changes (including create/delete) by glob patterns",
   "keywords": [
     "watch"
