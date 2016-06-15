@@ -75,7 +75,7 @@ class WatchMap {
 
   getFilenames(folderName) {
     return Object.keys(this.map[folderName] || {});
-  } 
+  }
 
   getAllFilenames() {
     let rv = [];
@@ -260,7 +260,7 @@ class GlobWatcher extends events.EventEmitter {
   }
 
   isMatch(filename) {
-    return _.any(this.patterns, (p) => minimatch(filename, p, { nonegate: true }));
+    return _.some(this.patterns, (p) => minimatch(filename, p, { nonegate: true }));
   }
 
   addWatch(filename) {
@@ -432,6 +432,6 @@ class GlobWatcher extends events.EventEmitter {
   folderIsInteresting(folderName) {
     let folderSegments = folderName.split("/");
     folderSegments = folderSegments.slice(0, folderSegments.length - 1);
-    return _.any(this.minimatchSets, (set) => folderMatchesMinimatchPrefix(folderSegments, set));
+    return _.some(this.minimatchSets, (set) => folderMatchesMinimatchPrefix(folderSegments, set));
   }
 }

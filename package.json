@@ -40,9 +40,8 @@
     "source-map-support": "*",
     "touch": "*"
   },
-  "main": "./lib/globwatcher",
+  "main": "./lib/globwatcher/globwatcher",
   "files": [
-    "build.plz",
     "lib",
     "test"
   ]
